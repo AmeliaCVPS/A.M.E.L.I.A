@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Sua Senha — A.M.E.L.I.A.{% endblock %}
+{% block body_class %}totem-bg{% endblock %}
+
+{% block content %}
+<div class="totem-wrap totem-wrap--senha fade-in">
+
+  <div class="totem-form-header">
+    <div class="totem-form-logo">
+      <img src="{{ url_for('static', filename='img/amelia-logo.png') }}" alt="AMELIA">
+      <span>A.M.E.L.I.A.</span>
+    </div>
+  </div>
+
+  <!-- Ticket card -->
+  {% set priority = ticket.priority %}
+  {% set color_class = 'urgent' if priority == 'urgent' else ('moderate' if priority == 'moderate' else 'light') %}
+  {% set priority_label = 'URGENTE' if priority == 'urgent' else ('MODERADO' if priority == 'moderate' else 'LEVE') %}
+  {% set priority_icon = '🔴' if priority == 'urgent' else ('🟡' if priority == 'moderate' else '🟢') %}
+  {% set priority_msg = 'Você será atendido com prioridade máxima. Aguarde na área de espera urgente.' if priority == 'urgent' else ('Você será atendido em breve. Aguarde na sala de espera.' if priority == 'moderate' else 'Aguarde confortavelmente. Você será chamado na ordem da fila.') %}
+
+  <div class="senha-card senha-card--{{ color_class }} slide-up">
+
+    <!-- Confetti animado -->
+    <div class="confetti-wrap" id="confettiWrap"></div>
+
+    <div class="senha-top">
+      <p class="senha-label">Sua senha de atendimento</p>
+      <div class="senha-code senha-code--{{ color_class }}" id="senhaCode">
+        {{ ticket.code }}
+      </div>
+      <div class="senha-priority-badge senha-badge--{{ color_class }}">
+        {{ priority_icon }} {{ priority_label }}
+      </div>
+    </div>
+
+    <!-- Confiança da IA -->
+    {% if ticket.ml_confidence %}
+    <div class="senha-ai-bar">
+      <div class="ai-bar-label">
+        <span>🤖 Confiança da IA</span>
+        <strong>{{ ticket.ml_confidence }}%</strong>
+      </div>
+      <div class="ai-bar-track">
+        <div class="ai-bar-fill ai-bar-fill--{{ color_class }}"
+             style="width: {{ ticket.ml_confidence }}%"></div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Mensagem -->
+    <div class="senha-msg">
+      <p>{{ priority_msg }}</p>
+    </div>
+
+    <!-- Info paciente -->
+    <div class="senha-patient">
+      <div class="senha-patient-row">
+        <span>👤 Paciente</span>
+        <strong>{{ ticket.user.name }}</strong>
+      </div>
+      <div class="senha-patient-row">
+        <span>🕐 Gerada em</span>
+        <strong>{{ ticket.created_at.strftime('%H:%M — %d/%m/%Y') }}</strong>
+      </div>
+      <div class="senha-patient-row">
+        <span>📋 Situação</span>
+        <strong class="status-badge status-badge--waiting">
+          {% if ticket.status == 'waiting' %}⏳ Aguardando chamada
+          {% elif ticket.status == 'called' %}📣 Sendo chamado
+          {% elif ticket.status == 'attended' %}✅ Atendido
+          {% else %}❌ Cancelado{% endif %}
+        </strong>
+      </div>
+    </div>
+
+    <!-- Instruções por prioridade -->
+    <div class="senha-instructions senha-instructions--{{ color_class }}">
+      {% if priority == 'urgent' %}
+        <p>⚠️ <strong>Dirija-se imediatamente</strong> à recepção de urgências e informe sua senha.</p>
+        <p>Caso piore, chame o SAMU: <strong>192</strong></p>
+      {% elif priority == 'moderate' %}
+        <p>🪑 <strong>Sente-se na sala de espera</strong> e aguarde ser chamado pelo seu código.</p>
+        <p>Fique atento ao painel de senhas.</p>
+      {% else %}
+        <p>🪑 <strong>Aguarde confortavelmente</strong>. Você será chamado na ordem da fila.</p>
+        <p>Fique atento ao painel de senhas.</p>
+      {% endif %}
+    </div>
+
+    <!-- Ações -->
+    <div class="senha-actions">
+      <button onclick="window.print()" class="senha-print-btn">🖨️ Imprimir Senha</button>
+      <a href="{{ url_for('logout') }}" class="senha-finish-btn">✅ Finalizar</a>
+    </div>
+
+  </div>
+
+  <!-- Info de emergência -->
+  <div class="totem-emergency slide-up" style="animation-delay:.5s">
+    <span class="emergency-icon">🚨</span>
+    <span>Emergência? <strong>SAMU 192 · Bombeiros 193</strong></span>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Animação de confetti leve ao carregar
+function launchConfetti() {
+  const wrap = document.getElementById('confettiWrap');
+  const colors = ['#4A6FA5','#27AE60','#F39C12','#E74C3C','#2E8B84','#7FC4FF'];
+  for(let i = 0; i < 24; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'confetti-dot';
+    dot.style.cssText = `
+      left: ${Math.random()*100}%;
+      background: ${colors[Math.floor(Math.random()*colors.length)]};
+      animation-delay: ${Math.random()*1}s;
+      animation-duration: ${1.5 + Math.random()}s;
+      width: ${6 + Math.random()*6}px;
+      height: ${6 + Math.random()*6}px;
+      border-radius: ${Math.random()>.5?'50%':'2px'};
+    `;
+    wrap.appendChild(dot);
+  }
+}
+
+// Pulsar o código da senha
+const codeEl = document.getElementById('senhaCode');
+setTimeout(() => codeEl.classList.add('senha-pulse'), 300);
+
+window.addEventListener('load', () => {
+  launchConfetti();
+});
+</script>
+{% endblock %}

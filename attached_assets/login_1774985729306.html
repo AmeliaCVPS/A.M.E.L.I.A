@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Login — A.M.E.L.I.A.{% endblock %}
+{% block body_class %}totem-bg{% endblock %}
+
+{% block content %}
+<div class="totem-wrap totem-wrap--form fade-in">
+
+  <div class="totem-form-header">
+    <a href="{{ url_for('index') }}" class="back-btn">← Voltar</a>
+    <div class="totem-form-logo">
+      <img src="{{ url_for('static', filename='img/amelia-logo.png') }}" alt="AMELIA">
+      <span>A.M.E.L.I.A.</span>
+    </div>
+  </div>
+
+  <div class="totem-card slide-up" style="max-width:480px; margin:0 auto;">
+    <div class="totem-card-icon float-anim">🔐</div>
+    <h2 class="totem-card-title">Identificação</h2>
+    <p class="totem-card-sub">Informe seu CPF ou Cartão SUS para entrar</p>
+
+    {% if error %}
+    <div class="error-list">
+      <div class="error-item">⚠️ {{ error }}</div>
+    </div>
+    {% endif %}
+
+    <!-- Toggle CPF / SUS -->
+    <div class="login-toggle" id="loginToggle">
+      <button class="login-toggle-btn active" data-type="cpf" type="button">CPF</button>
+      <button class="login-toggle-btn" data-type="sus" type="button">Cartão SUS</button>
+    </div>
+
+    <form method="POST" action="{{ url_for('login') }}" novalidate class="totem-form" id="loginForm">
+      <input type="hidden" name="login_type" id="loginType" value="cpf">
+
+      <div class="form-group">
+        <label class="form-label" id="identifierLabel">CPF</label>
+        <input class="form-control form-control--lg form-control--center" type="text"
+               name="identifier" id="identifierInput"
+               placeholder="000.000.000-00" maxlength="14"
+               autofocus autocomplete="off" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <div class="input-eye-wrap">
+          <input class="form-control form-control--lg" type="password" name="password"
+                 id="loginPw" placeholder="Digite sua senha" required autocomplete="current-password">
+          <button type="button" class="eye-btn" onclick="togglePw('loginPw',this)">👁</button>
+        </div>
+      </div>
+
+      <button type="submit" class="totem-submit-btn" id="loginBtn">
+        <span class="btn-text">🚀 Entrar e Iniciar Triagem</span>
+        <span class="btn-loading hidden">⏳ Verificando…</span>
+      </button>
+    </form>
+
+    <div class="form-footer-link">
+      Novo paciente? <a href="{{ url_for('cadastro') }}">Criar cadastro →</a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const btns = document.querySelectorAll('.login-toggle-btn');
+  const input = document.getElementById('identifierInput');
+  const label = document.getElementById('identifierLabel');
+  const type  = document.getElementById('loginType');
+
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      btns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const t = btn.dataset.type;
+      type.value = t;
+      if(t === 'cpf') {
+        label.textContent = 'CPF';
+        input.placeholder = '000.000.000-00';
+        input.maxLength = 14;
+      } else {
+        label.textContent = 'Cartão SUS';
+        input.placeholder = '000 0000 0000 0000';
+        input.maxLength = 18;
+      }
+      input.value = '';
+      input.focus();
+    });
+  });
+
+  input.addEventListener('input', function() {
+    const t = type.value;
+    let v = this.value.replace(/\D/g,'');
+    if(t==='cpf'){
+      v = v.slice(0,11);
+      if(v.length>9) v=v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/,'$1.$2.$3-$4');
+      else if(v.length>6) v=v.replace(/(\d{3})(\d{3})(\d{0,3})/,'$1.$2.$3');
+      else if(v.length>3) v=v.replace(/(\d{3})(\d{0,3})/,'$1.$2');
+    } else {
+      v = v.slice(0,15);
+      if(v.length>10) v=v.replace(/(\d{3})(\d{4})(\d{4})(\d{0,4})/,'$1 $2 $3 $4');
+      else if(v.length>6) v=v.replace(/(\d{3})(\d{4})(\d{0,4})/,'$1 $2 $3');
+      else if(v.length>3) v=v.replace(/(\d{3})(\d{0,4})/,'$1 $2');
+    }
+    this.value=v;
+  });
+
+  function togglePw(id, btn) {
+    const inp = document.getElementById(id);
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+  }
+
+  document.getElementById('loginForm').addEventListener('submit', function() {
+    document.querySelector('.btn-text').classList.add('hidden');
+    document.querySelector('.btn-loading').classList.remove('hidden');
+  });
+</script>
+{% endblock %}

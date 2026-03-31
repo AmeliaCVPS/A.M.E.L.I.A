@@ -1,22 +1,31 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: A.M.E.L.I.A. — API de Triagem Hospitalar
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+    description: Health check
+  - name: auth
+    description: Autenticação de usuários
+  - name: triagem
+    description: Triagem de pacientes
+  - name: tickets
+    description: Gerenciamento de senhas
+  - name: admin
+    description: Painel administrativo
+  - name: ml
+    description: Machine Learning e retreino
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +33,317 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/cadastro:
+    post:
+      operationId: cadastrarUsuario
+      tags: [auth]
+      summary: Cadastrar novo paciente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CadastroInput"
+      responses:
+        "201":
+          description: Usuário criado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: loginUsuario
+      tags: [auth]
+      summary: Login com CPF/SUS e senha
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Login bem-sucedido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logoutUsuario
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logout realizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /auth/me:
+    get:
+      operationId: obterUsuarioAtual
+      tags: [auth]
+      summary: Obter usuário autenticado
+      responses:
+        "200":
+          description: Dados do usuário
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Usuario"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /triagem:
+    post:
+      operationId: realizarTriagem
+      tags: [triagem]
+      summary: Realizar triagem e gerar senha
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TriagemInput"
+      responses:
+        "201":
+          description: Triagem realizada e senha gerada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+        "401":
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /tickets:
+    get:
+      operationId: listarTickets
+      tags: [tickets]
+      summary: Listar tickets (admin)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [waiting, called, attended, cancelled]
+        - name: priority
+          in: query
+          schema:
+            type: string
+            enum: [urgent, moderate, light]
+      responses:
+        "200":
+          description: Lista de tickets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Ticket"
+
+  /tickets/{id}:
+    get:
+      operationId: obterTicket
+      tags: [tickets]
+      summary: Obter ticket por ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Ticket encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+        "404":
+          description: Não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /tickets/{id}/status:
+    patch:
+      operationId: atualizarStatusTicket
+      tags: [tickets]
+      summary: Atualizar status do ticket
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AtualizarStatusInput"
+      responses:
+        "200":
+          description: Status atualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+
+  /tickets/{id}/corrigir:
+    patch:
+      operationId: corrigirClassificacaoTicket
+      tags: [tickets]
+      summary: Corrigir classificação ML do ticket
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CorrecaoInput"
+      responses:
+        "200":
+          description: Correção salva
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+
+  /admin/fila:
+    get:
+      operationId: obterFilaEspera
+      tags: [admin]
+      summary: Obter fila de espera atual
+      responses:
+        "200":
+          description: Fila de espera
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FilaEspera"
+
+  /admin/chamar/{prioridade}:
+    post:
+      operationId: chamarProximoTicket
+      tags: [admin]
+      summary: Chamar próximo ticket por prioridade
+      parameters:
+        - name: prioridade
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [urgent, moderate, light]
+      responses:
+        "200":
+          description: Próximo ticket chamado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChamarResponse"
+
+  /admin/resetar-fila:
+    post:
+      operationId: resetarFila
+      tags: [admin]
+      summary: Resetar toda a fila
+      responses:
+        "200":
+          description: Fila resetada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /admin/estatisticas:
+    get:
+      operationId: obterEstatisticas
+      tags: [admin]
+      summary: Obter estatísticas do painel
+      responses:
+        "200":
+          description: Estatísticas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Estatisticas"
+
+  /admin/pacientes:
+    get:
+      operationId: listarPacientes
+      tags: [admin]
+      summary: Listar pacientes cadastrados
+      responses:
+        "200":
+          description: Lista de pacientes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Usuario"
+
+  /ml/retreinar:
+    post:
+      operationId: retreinarModelo
+      tags: [ml]
+      summary: Retreinar modelo de ML com correções
+      responses:
+        "200":
+          description: Modelo retreinado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MLRetreinarResponse"
+
+  /ml/logs:
+    get:
+      operationId: listarLogsML
+      tags: [ml]
+      summary: Listar logs de treino do modelo
+      responses:
+        "200":
+          description: Logs de treino
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MLLog"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +351,241 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        mensagem:
+          type: string
+      required: [error]
+
+    SuccessResponse:
+      type: object
+      properties:
+        sucesso:
+          type: boolean
+        mensagem:
+          type: string
+      required: [sucesso]
+
+    CadastroInput:
+      type: object
+      properties:
+        nome:
+          type: string
+        cpf:
+          type: string
+        cartaoSus:
+          type: string
+        dataNascimento:
+          type: string
+        telefone:
+          type: string
+        senha:
+          type: string
+      required: [nome, cpf, senha]
+
+    LoginInput:
+      type: object
+      properties:
+        identificador:
+          type: string
+          description: CPF ou Cartão SUS
+        senha:
+          type: string
+      required: [identificador, senha]
+
+    AuthResponse:
+      type: object
+      properties:
+        usuario:
+          $ref: "#/components/schemas/Usuario"
+        token:
+          type: string
+      required: [usuario]
+
+    Usuario:
+      type: object
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        cpf:
+          type: string
+        cartaoSus:
+          type: string
+        dataNascimento:
+          type: string
+        telefone:
+          type: string
+        papel:
+          type: string
+          enum: [paciente, admin]
+        criadoEm:
+          type: string
+          format: date-time
+      required: [id, nome, cpf, papel, criadoEm]
+
+    TriagemInput:
+      type: object
+      properties:
+        descricaoSintomas:
+          type: string
+        nivelDor:
+          type: integer
+          minimum: 0
+          maximum: 10
+        temperatura:
+          type: number
+        frequenciaCardiaca:
+          type: integer
+        temFebre:
+          type: boolean
+        dificuldadeRespirar:
+          type: boolean
+        dorNoPeito:
+          type: boolean
+        conscienciaAlterada:
+          type: boolean
+      required: [descricaoSintomas]
+
+    Ticket:
+      type: object
+      properties:
+        id:
+          type: integer
+        usuarioId:
+          type: integer
+        nomeUsuario:
+          type: string
+        codigo:
+          type: string
+        prioridade:
+          type: string
+          enum: [urgent, moderate, light]
+        descricaoSintomas:
+          type: string
+        nivelDor:
+          type: integer
+        temperatura:
+          type: number
+        frequenciaCardiaca:
+          type: integer
+        temFebre:
+          type: boolean
+        dificuldadeRespirar:
+          type: boolean
+        dorNoPeito:
+          type: boolean
+        conscienciaAlterada:
+          type: boolean
+        predicaoML:
+          type: string
+        confiancaML:
+          type: number
+        correcaoAdmin:
+          type: string
+        status:
+          type: string
+          enum: [waiting, called, attended, cancelled]
+        criadoEm:
+          type: string
+          format: date-time
+        chamadoEm:
+          type: string
+          format: date-time
+      required: [id, usuarioId, codigo, prioridade, descricaoSintomas, status, criadoEm]
+
+    AtualizarStatusInput:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [waiting, called, attended, cancelled]
+      required: [status]
+
+    CorrecaoInput:
+      type: object
+      properties:
+        correcao:
+          type: string
+          enum: [urgent, moderate, light]
+      required: [correcao]
+
+    FilaEspera:
+      type: object
+      properties:
+        urgente:
+          type: array
+          items:
+            $ref: "#/components/schemas/Ticket"
+        moderado:
+          type: array
+          items:
+            $ref: "#/components/schemas/Ticket"
+        leve:
+          type: array
+          items:
+            $ref: "#/components/schemas/Ticket"
+      required: [urgente, moderado, leve]
+
+    ChamarResponse:
+      type: object
+      properties:
+        ticket:
+          $ref: "#/components/schemas/Ticket"
+        encontrado:
+          type: boolean
+      required: [encontrado]
+
+    Estatisticas:
+      type: object
+      properties:
+        total:
+          type: integer
+        aguardando:
+          type: integer
+        urgente:
+          type: integer
+        moderado:
+          type: integer
+        leve:
+          type: integer
+        atendidos:
+          type: integer
+        correcoesPendentes:
+          type: integer
+      required: [total, aguardando, urgente, moderado, leve, atendidos, correcoesPendentes]
+
+    MLRetreinarResponse:
+      type: object
+      properties:
+        sucesso:
+          type: boolean
+        amostrasUsadas:
+          type: integer
+        acuracia:
+          type: number
+        mensagem:
+          type: string
+      required: [sucesso]
+
+    MLLog:
+      type: object
+      properties:
+        id:
+          type: integer
+        treinadoEm:
+          type: string
+          format: date-time
+        amostrasUsadas:
+          type: integer
+        acuracia:
+          type: number
+        notas:
+          type: string
+      required: [id, treinadoEm, amostrasUsadas]

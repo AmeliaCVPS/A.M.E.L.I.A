@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+{% block title %}Triagem — A.M.E.L.I.A.{% endblock %}
+{% block body_class %}totem-bg{% endblock %}
+
+{% block content %}
+<div class="totem-wrap totem-wrap--triagem fade-in">
+
+  <!-- Header -->
+  <div class="totem-form-header">
+    <a href="{{ url_for('logout') }}" class="back-btn">← Sair</a>
+    <div class="totem-form-logo">
+      <img src="{{ url_for('static', filename='img/amelia-logo.png') }}" alt="AMELIA">
+      <span>A.M.E.L.I.A.</span>
+    </div>
+  </div>
+
+  <!-- Saudação -->
+  <div class="triagem-greeting slide-up">
+    <span class="greeting-wave">👋</span>
+    <div>
+      <h2>Olá, <strong>{{ user_name }}</strong>!</h2>
+      <p>Vamos entender como você está se sentindo hoje.</p>
+    </div>
+  </div>
+
+  <!-- Steps -->
+  <div class="triagem-steps" id="triagemSteps">
+
+    <form method="POST" action="{{ url_for('triagem') }}" novalidate id="triagemForm">
+
+      <!-- ── STEP 1: Sintoma principal ──────────────────── -->
+      <div class="triagem-step active" id="step1">
+        <div class="step-indicator">
+          <span class="step-num">1</span>
+          <span class="step-total">de 3</span>
+        </div>
+        <div class="step-icon float-anim">🤒</div>
+        <h3 class="step-title">O que está sentindo?</h3>
+        <p class="step-desc">Descreva seu sintoma principal com suas próprias palavras</p>
+
+        <div class="form-group">
+          <textarea class="form-control form-control--lg" name="symptoms_desc" id="symptomsDesc"
+                    rows="4" placeholder="Ex: Estou com forte dor de cabeça há 2 dias, acompanhada de febre e mal-estar..."
+                    required minlength="10"></textarea>
+          <div class="char-counter"><span id="charCount">0</span> caracteres</div>
+        </div>
+
+        <!-- Checkboxes de sintomas graves -->
+        <div class="symptom-flags">
+          <p class="flags-title">Você está sentindo algum destes sintomas agora?</p>
+          <div class="flags-grid">
+            <label class="flag-item flag-item--urgent">
+              <input type="checkbox" name="chest_pain" value="1" id="chestPain">
+              <span class="flag-icon">💔</span>
+              <span>Dor no peito</span>
+            </label>
+            <label class="flag-item flag-item--urgent">
+              <input type="checkbox" name="difficulty_breathing" value="1" id="diffBreath">
+              <span class="flag-icon">😮‍💨</span>
+              <span>Falta de ar</span>
+            </label>
+            <label class="flag-item flag-item--moderate">
+              <input type="checkbox" name="has_fever" value="1" id="hasFever">
+              <span class="flag-icon">🌡️</span>
+              <span>Febre</span>
+            </label>
+            <label class="flag-item flag-item--urgent">
+              <input type="checkbox" name="consciousness_altered" value="1" id="consAltered">
+              <span class="flag-icon">😵</span>
+              <span>Confusão / Desmaio</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Alerta se marcou urgente -->
+        <div class="emergency-alert hidden" id="emergencyAlert">
+          <span>🚨</span>
+          <div>
+            <strong>Atenção!</strong>
+            <span>Sintomas graves detectados. Se sentir perigo imediato, chame o <strong>SAMU 192</strong>.</span>
+          </div>
+        </div>
+
+        <button type="button" class="totem-submit-btn" onclick="goStep(2)">
+          Próximo →
+        </button>
+      </div>
+
+      <!-- ── STEP 2: Intensidade e vitais ───────────────── -->
+      <div class="triagem-step" id="step2">
+        <div class="step-indicator">
+          <span class="step-num">2</span>
+          <span class="step-total">de 3</span>
+        </div>
+        <div class="step-icon float-anim">📊</div>
+        <h3 class="step-title">Intensidade da dor</h3>
+        <p class="step-desc">Arraste o controle para indicar o nível de dor (0 = sem dor, 10 = insuportável)</p>
+
+        <!-- Pain slider -->
+        <div class="pain-slider-wrap">
+          <div class="pain-labels">
+            <span>😊 Sem dor</span>
+            <span>😐 Moderada</span>
+            <span>😭 Intensa</span>
+          </div>
+          <input type="range" name="pain_level" id="painSlider" min="0" max="10" value="0"
+                 class="pain-slider">
+          <div class="pain-value-display" id="painDisplay">
+            <span class="pain-num" id="painNum">0</span>
+            <span class="pain-emoji" id="painEmoji">😊</span>
+          </div>
+        </div>
+
+        <!-- Dados vitais opcionais -->
+        <div class="vitals-section">
+          <h4 class="vitals-title">📋 Dados vitais <small>(opcional)</small></h4>
+          <div class="vitals-grid">
+            <div class="form-group">
+              <label class="form-label">🌡️ Temperatura (°C)</label>
+              <input class="form-control form-control--lg" type="number"
+                     name="temperature" placeholder="36.5" min="35" max="43" step="0.1">
+            </div>
+            <div class="form-group">
+              <label class="form-label">❤️ Batimentos (bpm)</label>
+              <input class="form-control form-control--lg" type="number"
+                     name="heart_rate" placeholder="72" min="30" max="250">
+            </div>
+          </div>
+        </div>
+
+        <div class="step-nav">
+          <button type="button" class="totem-back-btn" onclick="goStep(1)">← Voltar</button>
+          <button type="button" class="totem-submit-btn" onclick="goStep(3)">Próximo →</button>
+        </div>
+      </div>
+
+      <!-- ── STEP 3: Confirmação ─────────────────────────── -->
+      <div class="triagem-step" id="step3">
+        <div class="step-indicator">
+          <span class="step-num">3</span>
+          <span class="step-total">de 3</span>
+        </div>
+        <div class="step-icon float-anim">✅</div>
+        <h3 class="step-title">Confirmação</h3>
+        <p class="step-desc">Revise as informações antes de gerar sua senha</p>
+
+        <div class="confirm-box" id="confirmBox">
+          <div class="confirm-item">
+            <span class="confirm-label">📝 Sintoma</span>
+            <span class="confirm-value" id="confirmSymptoms">—</span>
+          </div>
+          <div class="confirm-item">
+            <span class="confirm-label">🔢 Dor</span>
+            <span class="confirm-value" id="confirmPain">0 / 10</span>
+          </div>
+          <div class="confirm-item" id="confirmFlagsRow">
+            <span class="confirm-label">⚠️ Alertas</span>
+            <span class="confirm-value" id="confirmFlags">Nenhum</span>
+          </div>
+        </div>
+
+        <div class="triagem-info-box">
+          <span>🤖</span>
+          <p>Nosso sistema de <strong>Inteligência Artificial</strong> irá analisar suas respostas e determinar o nível de prioridade do seu atendimento.</p>
+        </div>
+
+        <div class="step-nav">
+          <button type="button" class="totem-back-btn" onclick="goStep(2)">← Voltar</button>
+          <button type="submit" class="totem-submit-btn totem-submit-btn--green" id="finalSubmit">
+            <span class="btn-text">🎫 Gerar Minha Senha</span>
+            <span class="btn-loading hidden">🤖 Analisando sintomas…</span>
+          </button>
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Progress dots -->
+  <div class="step-dots" id="stepDots">
+    <span class="step-dot active" data-step="1"></span>
+    <span class="step-dot" data-step="2"></span>
+    <span class="step-dot" data-step="3"></span>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentStep = 1;
+
+// Pain slider
+const painSlider  = document.getElementById('painSlider');
+const painNum     = document.getElementById('painNum');
+const painEmoji   = document.getElementById('painEmoji');
+const painEmojis  = ['😊','😊','😐','😐','😟','😟','😣','😣','😭','😭','🤯'];
+
+painSlider.addEventListener('input', function() {
+  const val = parseInt(this.value);
+  painNum.textContent = val;
+  painEmoji.textContent = painEmojis[val];
+  const hue = Math.round(120 - val * 12);
+  this.style.setProperty('--thumb-color', `hsl(${hue},80%,45%)`);
+});
+
+// Char counter
+const desc = document.getElementById('symptomsDesc');
+const counter = document.getElementById('charCount');
+desc.addEventListener('input', function() {
+  counter.textContent = this.value.length;
+});
+
+// Emergency alert
+const urgentChecks = document.querySelectorAll('#chestPain, #diffBreath, #consAltered');
+const alert = document.getElementById('emergencyAlert');
+urgentChecks.forEach(cb => {
+  cb.addEventListener('change', () => {
+    const anyChecked = [...urgentChecks].some(c => c.checked);
+    alert.classList.toggle('hidden', !anyChecked);
+  });
+});
+
+// Step navigation
+function goStep(n) {
+  if(n === 2 && !validateStep1()) return;
+
+  document.getElementById('step' + currentStep).classList.remove('active');
+  document.getElementById('step' + n).classList.add('active');
+
+  document.querySelectorAll('.step-dot').forEach(d => {
+    d.classList.toggle('active', parseInt(d.dataset.step) <= n);
+  });
+
+  if(n === 3) fillConfirm();
+  currentStep = n;
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function validateStep1() {
+  const v = desc.value.trim();
+  if(v.length < 10) {
+    desc.focus();
+    desc.classList.add('input-error');
+    setTimeout(() => desc.classList.remove('input-error'), 2000);
+    return false;
+  }
+  return true;
+}
+
+function fillConfirm() {
+  document.getElementById('confirmSymptoms').textContent =
+    desc.value.trim().slice(0,80) + (desc.value.length > 80 ? '…' : '');
+  document.getElementById('confirmPain').textContent =
+    painSlider.value + ' / 10  ' + painEmojis[parseInt(painSlider.value)];
+
+  const flags = [];
+  if(document.getElementById('chestPain').checked)      flags.push('💔 Dor no peito');
+  if(document.getElementById('diffBreath').checked)     flags.push('😮‍💨 Falta de ar');
+  if(document.getElementById('hasFever').checked)       flags.push('🌡️ Febre');
+  if(document.getElementById('consAltered').checked)    flags.push('😵 Confusão');
+  document.getElementById('confirmFlags').textContent = flags.length ? flags.join(' · ') : 'Nenhum';
+}
+
+document.getElementById('triagemForm').addEventListener('submit', function() {
+  document.querySelector('.btn-text').classList.add('hidden');
+  document.querySelector('.btn-loading').classList.remove('hidden');
+  document.getElementById('finalSubmit').disabled = true;
+});
+</script>
+{% endblock %}

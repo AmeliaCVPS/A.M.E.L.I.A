@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Cadastro — A.M.E.L.I.A.{% endblock %}
+{% block body_class %}totem-bg{% endblock %}
+
+{% block content %}
+<div class="totem-wrap totem-wrap--form fade-in">
+
+  <!-- Header compacto -->
+  <div class="totem-form-header">
+    <a href="{{ url_for('index') }}" class="back-btn">← Voltar</a>
+    <div class="totem-form-logo">
+      <img src="{{ url_for('static', filename='img/amelia-logo.png') }}" alt="AMELIA">
+      <span>A.M.E.L.I.A.</span>
+    </div>
+  </div>
+
+  <div class="totem-card slide-up">
+    <div class="totem-card-icon">📋</div>
+    <h2 class="totem-card-title">Criar meu Cadastro</h2>
+    <p class="totem-card-sub">Preencha os dados abaixo para começar seu atendimento</p>
+
+    {% if errors %}
+    <div class="error-list">
+      {% for e in errors %}
+        <div class="error-item">⚠️ {{ e }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('cadastro') }}" novalidate class="totem-form" id="cadastroForm">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nome Completo <span class="req">*</span></label>
+          <input class="form-control form-control--lg" type="text" name="name"
+                 value="{{ form.get('name','') }}"
+                 placeholder="Ex: Maria da Silva" required autocomplete="name">
+        </div>
+      </div>
+
+      <div class="form-row form-row--2">
+        <div class="form-group">
+          <label class="form-label">CPF <span class="req">*</span></label>
+          <input class="form-control form-control--lg" type="text" name="cpf" id="cpfInput"
+                 value="{{ form.get('cpf','') }}"
+                 placeholder="000.000.000-00" maxlength="14" required autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cartão SUS</label>
+          <input class="form-control form-control--lg" type="text" name="sus_card" id="susInput"
+                 value="{{ form.get('sus_card','') }}"
+                 placeholder="000 0000 0000 0000" maxlength="18" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="form-row form-row--2">
+        <div class="form-group">
+          <label class="form-label">Data de Nascimento</label>
+          <input class="form-control form-control--lg" type="date" name="date_of_birth"
+                 value="{{ form.get('date_of_birth','') }}" autocomplete="bday">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Telefone</label>
+          <input class="form-control form-control--lg" type="tel" name="phone"
+                 value="{{ form.get('phone','') }}"
+                 placeholder="(11) 99999-9999" autocomplete="tel">
+        </div>
+      </div>
+
+      <div class="form-divider"><span>Criar senha de acesso</span></div>
+
+      <div class="form-row form-row--2">
+        <div class="form-group">
+          <label class="form-label">Senha <span class="req">*</span></label>
+          <div class="input-eye-wrap">
+            <input class="form-control form-control--lg" type="password" name="password"
+                   id="pwInput" placeholder="Mínimo 4 caracteres" required autocomplete="new-password">
+            <button type="button" class="eye-btn" onclick="togglePw('pwInput',this)">👁</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirmar Senha <span class="req">*</span></label>
+          <div class="input-eye-wrap">
+            <input class="form-control form-control--lg" type="password" name="confirm_password"
+                   id="pwConfirm" placeholder="Repita a senha" required autocomplete="new-password">
+            <button type="button" class="eye-btn" onclick="togglePw('pwConfirm',this)">👁</button>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="totem-submit-btn" id="submitBtn">
+        <span class="btn-text">✅ Criar Cadastro e Entrar</span>
+        <span class="btn-loading hidden">⏳ Aguarde…</span>
+      </button>
+    </form>
+
+    <div class="form-footer-link">
+      Já tem cadastro? <a href="{{ url_for('login') }}">Fazer login →</a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // CPF mask
+  document.getElementById('cpfInput').addEventListener('input', function() {
+    let v = this.value.replace(/\D/g,'').slice(0,11);
+    if(v.length>9) v=v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/,'$1.$2.$3-$4');
+    else if(v.length>6) v=v.replace(/(\d{3})(\d{3})(\d{0,3})/,'$1.$2.$3');
+    else if(v.length>3) v=v.replace(/(\d{3})(\d{0,3})/,'$1.$2');
+    this.value=v;
+  });
+  // SUS mask
+  document.getElementById('susInput').addEventListener('input', function() {
+    let v = this.value.replace(/\D/g,'').slice(0,15);
+    if(v.length>10) v=v.replace(/(\d{3})(\d{4})(\d{4})(\d{0,4})/,'$1 $2 $3 $4');
+    else if(v.length>6) v=v.replace(/(\d{3})(\d{4})(\d{0,4})/,'$1 $2 $3');
+    else if(v.length>3) v=v.replace(/(\d{3})(\d{0,4})/,'$1 $2');
+    this.value=v;
+  });
+
+  function togglePw(id, btn) {
+    const inp = document.getElementById(id);
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+  }
+
+  document.getElementById('cadastroForm').addEventListener('submit', function() {
+    document.querySelector('.btn-text').classList.add('hidden');
+    document.querySelector('.btn-loading').classList.remove('hidden');
+  });
+</script>
+{% endblock %}
