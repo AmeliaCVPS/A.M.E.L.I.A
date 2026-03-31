@@ -31,7 +31,9 @@ export default function AdminDashboard() {
         {/* Sidebar */}
         <aside className="w-64 bg-[#0f2447] text-white flex flex-col shadow-2xl relative z-10 shrink-0">
           <div className="p-6 pb-2 flex items-center gap-3">
-            <img src="/amelia-logo.png" alt="A.M.E.L.I.A" className="w-10 h-10 brightness-0 invert" />
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shrink-0 shadow-md">
+              <img src="/amelia-logo.png" alt="A.M.E.L.I.A" className="w-8 h-8 object-contain" />
+            </div>
             <div className="font-bold text-xl tracking-tight">Painel Admin</div>
           </div>
           

@@ -11,10 +11,23 @@ export default function Home() {
   return (
     <div className="min-h-[100dvh] w-full flex flex-col items-center justify-center p-6 relative overflow-hidden">
       
-      {/* Abstract background elements */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/10 blur-[100px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-400/10 blur-[100px]" />
+      {/* Calming animated background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <motion.div
+          className="absolute top-[-15%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 blur-[120px]"
+          animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0.8, 0.5] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-[-15%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-400/10 blur-[120px]"
+          animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.7, 0.4] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        />
+        <motion.div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[30%] h-[30%] rounded-full bg-blue-300/5 blur-[80px]"
+          animate={{ scale: [1, 1.4, 1] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        />
       </div>
 
       <motion.div 
@@ -23,9 +36,13 @@ export default function Home() {
         transition={{ duration: 0.6 }}
         className="z-10 flex flex-col items-center max-w-2xl w-full text-center"
       >
-        <div className="mb-8 p-6 bg-white/5 rounded-full backdrop-blur-sm border border-white/10 shadow-xl">
-          <img src="/amelia-logo.png" alt="A.M.E.L.I.A Logo" className="w-32 h-32 object-contain" />
-        </div>
+        <motion.div
+          animate={{ y: [0, -8, 0] }}
+          transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+          className="mb-8 w-36 h-36 bg-white rounded-full flex items-center justify-center shadow-[0_8px_40px_rgba(255,255,255,0.18)] border-4 border-white/60"
+        >
+          <img src="/amelia-logo.png" alt="A.M.E.L.I.A Logo" className="w-28 h-28 object-contain" />
+        </motion.div>
         
         <h1 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight">
           Olá, eu sou a A.M.E.L.I.A.
