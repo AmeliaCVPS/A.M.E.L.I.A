@@ -17,7 +17,7 @@ Sistema de triagem médica com IA para o SUS (Sistema Único de Saúde) do Brasi
 - **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui, Framer Motion, Wouter
 - **Backend**: Express, TypeScript, Drizzle ORM, bcrypt, express-session
 - **Banco de dados**: PostgreSQL (via `DATABASE_URL`)
-- **Auth**: Session-based (express-session com cookies httpOnly)
+- **Auth**: Session-based (express-session + connect-pg-simple — sessões persistidas no PostgreSQL, tabela `sessoes`)
 - **ML**: Classificador keyword-scoring + análise de sinais vitais (`ml-triage.ts`)
 
 ## Credenciais de Teste
@@ -35,7 +35,7 @@ Sistema de triagem médica com IA para o SUS (Sistema Único de Saúde) do Brasi
 | `/` | Home — Totem de boas-vindas com seleção de acesso |
 | `/login` | Login via CPF ou Cartão SUS |
 | `/cadastro` | Primeiro cadastro de paciente |
-| `/triagem` | Wizard de triagem 3 etapas (sintomas → sinais vitais → revisão) |
+| `/triagem` | Wizard de triagem 4 etapas (sintomas c/ 40+ opções em 7 categorias → histórico clínico → sinais vitais → revisão) |
 | `/senha/:id` | Senha/Ticket gerado com prioridade |
 | `/admin` | Painel administrativo (requer papel=admin) |
 
