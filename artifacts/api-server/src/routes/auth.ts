@@ -82,6 +82,11 @@ router.post("/login", async (req, res) => {
 
     const idLimpo = identificador.replace(/\D/g, "");
 
+    if (idLimpo.length !== 11 && idLimpo.length !== 15) {
+      res.status(400).json({ error: "Formato inválido", mensagem: "Digite um CPF (11 dígitos) ou Cartão SUS (15 dígitos) válido.", campo: "identificador" });
+      return;
+    }
+
     const usuarios = await db.select().from(usuariosTable)
       .where(or(
         eq(usuariosTable.cpf, idLimpo),
@@ -90,7 +95,8 @@ router.post("/login", async (req, res) => {
       .limit(1);
 
     if (usuarios.length === 0) {
-      res.status(401).json({ error: "Credenciais inválidas", mensagem: "CPF/SUS ou senha incorretos." });
+      const tipo = idLimpo.length === 11 ? "CPF" : "Cartão SUS";
+      res.status(401).json({ error: "Não cadastrado", mensagem: `Este ${tipo} não possui cadastro. Clique em "Criar meu cadastro" para se registrar.`, campo: "identificador" });
       return;
     }
 
@@ -98,7 +104,7 @@ router.post("/login", async (req, res) => {
     const senhaValida = await bcrypt.compare(senha, usuario.senhaHash);
 
     if (!senhaValida) {
-      res.status(401).json({ error: "Credenciais inválidas", mensagem: "CPF/SUS ou senha incorretos." });
+      res.status(401).json({ error: "Senha inválida", mensagem: "Senha incorreta. Verifique e tente novamente.", campo: "senha" });
       return;
     }
 
