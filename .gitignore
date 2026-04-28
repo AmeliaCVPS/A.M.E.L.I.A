@@ -1,0 +1,23 @@
+# Chave de criptografia — NUNCA comitar!
+secret.key
+
+# Banco local de desenvolvimento
+amelia_local.db
+
+# Modelos treinados (regenere com train_model.py)
+*.joblib
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+.venv/
+venv/
+
+# Vercel
+.vercel/
+
+# OS
+.DS_Store
+Thumbs.db
