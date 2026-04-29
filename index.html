@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A.M.E.L.I.A — Triagem Inteligente</title>
+
+    <!-- Variable fonts para tipografia dinâmica -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<!-- Cursor custom (SpringCursor do animations.js) -->
+<div id="cursor"     aria-hidden="true"></div>
+<div id="cursor-dot" aria-hidden="true"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════════════════════════ -->
+<header class="site-header">
+    <div class="header-inner">
+        <a class="brand brand-mark" href="#" onclick="showScreen('welcome');return false" data-magnetic=".25">
+            <img src="AmeliaCVPS.png" alt="AMÉLIA" class="brand-logo" id="logo-img">
+            <span class="brand-name">A.M.E.L.I.A</span>
+        </a>
+        <nav class="nav" id="nav-buttons" role="navigation" aria-label="Principal">
+            <button class="btn btn-ghost" onclick="showScreen('login')"    data-magnetic=".3">Entrar</button>
+            <button class="btn btn-solid" onclick="showScreen('cadastro')" data-magnetic=".3">Cadastrar</button>
+        </nav>
+    </div>
+</header>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     CONTEÚDO PRINCIPAL
+══════════════════════════════════════════════════════════════ -->
+<main>
+
+    <!-- ─────────────────────────────────────────────────────
+         TELA INICIAL — hero split layout
+    ───────────────────────────────────────────────────────── -->
+    <section id="screen-welcome" class="screen active">
+        <div class="hero" data-tilt="4">
+
+            <!-- Lado esquerdo: copy -->
+            <div class="hero__content">
+
+                <p class="hero__eyebrow" data-stagger>
+                    <span class="eyebrow-dot" aria-hidden="true"></span>
+                    Protocolo de Manchester · IA · LGPD
+                </p>
+
+                <!-- Heading split em linhas para animação char-by-char -->
+                <h1 class="hero__heading" aria-label="Triagem médica inteligente">
+                    <span class="hero__line">Triagem</span>
+                    <span class="hero__line hero__line--outline">médica</span>
+                    <span class="hero__line"><em>inteligente</em></span>
+                </h1>
+
+                <p class="hero__body" data-stagger>
+                    Classificação automática de risco por voz ou texto,
+                    com modelo Random Forest de <strong>97,7% de acurácia</strong>.
+                    Protocolo clínico real. Resultado em segundos.
+                </p>
+
+                <div class="hero__actions" data-stagger>
+                    <button class="btn btn-solid btn-xl" onclick="showScreen('cadastro')" data-magnetic=".35">
+                        Começar agora
+                    </button>
+                    <button class="btn btn-ghost btn-xl" onclick="showScreen('login')" data-magnetic=".35">
+                        Já tenho conta
+                    </button>
+                </div>
+
+                <button class="btn btn-link" onclick="showScreen('sobre')" data-stagger>
+                    Sobre o projeto
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                        <path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Lado direito: orbs clínicos (paralaxe JS) -->
+            <div class="hero__visual" aria-hidden="true">
+                <div class="orb-stack" data-stagger-group>
+
+                    <div class="orb orb--red" data-stagger data-tilt="6">
+                        <span class="orb__label">🔴 Emergência</span>
+                        <span class="orb__sub">Atendimento imediato · U001</span>
+                    </div>
+
+                    <div class="orb orb--orange" data-stagger data-tilt="6">
+                        <span class="orb__label">🟠 Muito Urgente</span>
+                        <span class="orb__sub">≤ 10 minutos · U002</span>
+                    </div>
+
+                    <div class="orb orb--yellow" data-stagger data-tilt="6">
+                        <span class="orb__label">🟡 Urgente</span>
+                        <span class="orb__sub">≤ 30 minutos · M001</span>
+                    </div>
+
+                    <div class="orb orb--green" data-stagger data-tilt="6">
+                        <span class="orb__label">🟢 Pouco Urgente</span>
+                        <span class="orb__sub">≤ 2 horas · L001</span>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- ─────────────────────────────────────────────────────
+         CADASTRO
+    ───────────────────────────────────────────────────────── -->
+    <section id="screen-cadastro" class="screen">
+        <div class="panel" data-tilt="2.5">
+            <div class="panel__head">
+                <div class="panel__icon" aria-hidden="true">📋</div>
+                <h2 class="panel__title">Criar conta</h2>
+                <p class="panel__sub">Seus dados ficam protegidos por criptografia AES-128.</p>
+            </div>
+
+            <form id="form-cadastro" class="form" onsubmit="handleCadastro(event)" novalidate>
+                <div class="field" data-stagger>
+                    <label for="cad-nome">Nome completo</label>
+                    <input id="cad-nome" type="text" required placeholder="Maria da Silva" autocomplete="name">
+                </div>
+
+                <div class="field-row" data-stagger-group>
+                    <div class="field" data-stagger>
+                        <label for="cad-cpf">CPF</label>
+                        <input id="cad-cpf" type="text" required placeholder="000.000.000-00" maxlength="14" autocomplete="off">
+                    </div>
+                    <div class="field" data-stagger>
+                        <label for="cad-nascimento">Nascimento</label>
+                        <input id="cad-nascimento" type="date" required autocomplete="bday">
+                    </div>
+                </div>
+
+                <div class="field-row" data-stagger-group>
+                    <div class="field" data-stagger>
+                        <label for="cad-sus">Cartão SUS</label>
+                        <input id="cad-sus" type="text" required placeholder="000 0000 0000 0000" maxlength="19" autocomplete="off">
+                    </div>
+                    <div class="field" data-stagger>
+                        <label for="cad-sexo">Sexo biológico</label>
+                        <select id="cad-sexo" required>
+                            <option value="">Selecione</option>
+                            <option value="M">Masculino</option>
+                            <option value="F">Feminino</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field" data-stagger>
+                    <label for="cad-telefone">Telefone <span class="field__opt">(opcional)</span></label>
+                    <input id="cad-telefone" type="tel" placeholder="(11) 99999-9999" maxlength="15" autocomplete="tel">
+                </div>
+
+                <div class="field-row" data-stagger-group>
+                    <div class="field" data-stagger>
+                        <label for="cad-senha">Senha</label>
+                        <input id="cad-senha" type="password" required placeholder="Mín. 6 caracteres" minlength="6" autocomplete="new-password">
+                    </div>
+                    <div class="field" data-stagger>
+                        <label for="cad-senha-confirm">Confirmar senha</label>
+                        <input id="cad-senha-confirm" type="password" required placeholder="Repita a senha" minlength="6" autocomplete="new-password">
+                    </div>
+                </div>
+
+                <div class="form__actions" data-stagger>
+                    <button type="submit" class="btn btn-solid btn-lg" data-magnetic=".3">Criar conta</button>
+                    <button type="button" class="btn btn-ghost" onclick="showScreen('welcome')" data-magnetic=".2">Voltar</button>
+                </div>
+            </form>
+
+            <p class="panel__footer">
+                Já tem conta? <a href="#" onclick="showScreen('login');return false">Entrar</a>
+            </p>
+        </div>
+    </section>
+
+
+    <!-- ─────────────────────────────────────────────────────
+         LOGIN
+    ───────────────────────────────────────────────────────── -->
+    <section id="screen-login" class="screen">
+        <div class="panel panel--narrow" data-tilt="2.5">
+            <div class="panel__head">
+                <div class="panel__icon" aria-hidden="true">🔐</div>
+                <h2 class="panel__title">Entrar</h2>
+                <p class="panel__sub">Use seu CPF ou Cartão SUS.</p>
+            </div>
+
+            <form id="form-login" class="form" onsubmit="handleLogin(event)" novalidate>
+                <div class="field" data-stagger>
+                    <label for="login-id">CPF ou Cartão SUS</label>
+                    <input id="login-id" type="text" required placeholder="Digite seu CPF ou SUS" autocomplete="username">
+                </div>
+                <div class="field" data-stagger>
+                    <label for="login-senha">Senha</label>
+                    <input id="login-senha" type="password" required placeholder="Sua senha" autocomplete="current-password">
+                </div>
+                <div class="form__actions" data-stagger>
+                    <button type="submit" class="btn btn-solid btn-lg" data-magnetic=".3">Entrar</button>
+                    <button type="button" class="btn btn-ghost" onclick="showScreen('welcome')" data-magnetic=".2">Voltar</button>
+                </div>
+            </form>
+
+            <p class="panel__footer">
+                Sem conta? <a href="#" onclick="showScreen('cadastro');return false">Cadastre-se</a>
+            </p>
+        </div>
+    </section>
+
+
+    <!-- ─────────────────────────────────────────────────────
+         PAINEL DE TRIAGEM — chat
+         IDs obrigatórios para script.js:
+           #chat-messages, #chat-input-area, #chat-actions,
+           #chat-input, #chat-send, #btn-voice,
+           #api-status, #api-indicator, #voice-feedback
+    ───────────────────────────────────────────────────────── -->
+    <section id="screen-painel" class="screen">
+        <div class="chat-wrap">
+
+            <!-- Cabeçalho -->
+            <header class="chat-head" role="banner">
+                <div class="chat-avatar-wrap" aria-hidden="true">
+                    <span class="chat-avatar">🤖</span>
+                    <span class="pulse-ring"></span>
+                </div>
+                <div class="chat-head-info">
+                    <strong>A.M.E.L.I.A</strong>
+                    <span id="api-status">Assistente de Triagem</span>
+                </div>
+                <span id="api-indicator" class="api-dot" title="Status da API" aria-label="Status da API">⚪</span>
+            </header>
+
+            <!-- Mensagens: id para script.js, class para CSS -->
+            <div id="chat-messages" class="chat-msgs" role="log" aria-live="polite" aria-label="Conversa de triagem"></div>
+
+            <!-- Input: id="chat-input-area" para script.js, class="chat-bar" para CSS -->
+            <div id="chat-input-area" class="chat-bar" role="form" aria-label="Enviar resposta">
+                <label for="chat-input" class="sr-only">Sua resposta</label>
+                <input
+                    id="chat-input"
+                    type="text"
+                    placeholder="Digite sua resposta ou clique no microfone…"
+                    disabled
+                    autocomplete="off"
+                    aria-label="Campo de resposta"
+                >
+                <button
+                    id="btn-voice"
+                    class="btn-mic"
+                    onclick="toggleRecording()"
+                    title="Clique para falar"
+                    aria-label="Iniciar gravação de voz"
+                    data-magnetic=".4"
+                >🎙️</button>
+                <button
+                    id="chat-send"
+                    class="btn btn-solid"
+                    onclick="sendMessage()"
+                    disabled
+                    data-magnetic=".3"
+                >Enviar</button>
+            </div>
+
+            <!-- Feedback de voz: id para voice.js, class para CSS -->
+            <div id="voice-feedback" class="voice-fb" role="status" aria-live="polite"></div>
+
+            <!-- Ações pós-triagem: id="chat-actions" para script.js, class="chat-done" para CSS -->
+            <div id="chat-actions" class="chat-done" style="display:none" role="group" aria-label="Ações pós-triagem">
+                <button class="btn btn-solid btn-lg" onclick="generatePDF()" data-magnetic=".3">
+                    📄 Baixar Prontuário PDF
+                </button>
+                <button class="btn btn-ghost" onclick="resetChat()" data-magnetic=".2">
+                    🔄 Nova Triagem
+                </button>
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- ─────────────────────────────────────────────────────
+         SOBRE
+    ───────────────────────────────────────────────────────── -->
+    <section id="screen-sobre" class="screen">
+        <div class="about" data-tilt="2">
+
+            <div class="about__logo-wrap" aria-hidden="true">
+                <img src="AmeliaCVPS.png" alt="Logo Colégio Visconde de Porto Seguro" class="about__logo">
+            </div>
+
+            <h2 class="about__title">Sobre a A.M.E.L.I.A</h2>
+            <p class="about__tag">Tecnologia a favor da vida</p>
+
+            <p class="about__body">
+                A AMÉLIA utiliza <strong>Inteligência Artificial</strong> para triagem médica
+                automatizada baseada no <strong>Protocolo de Manchester</strong>. O modelo
+                Random Forest, treinado com mais de 1.600 casos clínicos, atinge
+                <strong>97,7% de acurácia</strong> na classificação de risco —
+                garantindo agilidade, precisão e conformidade com a LGPD.
+            </p>
+
+            <div class="about__stats" data-stagger-group>
+                <div class="stat" data-stagger data-tilt="5">
+                    <span>97.7%</span>
+                    <small>Acurácia do modelo</small>
+                </div>
+                <div class="stat" data-stagger data-tilt="5">
+                    <span>500</span>
+                    <small>Árvores de decisão</small>
+                </div>
+                <div class="stat" data-stagger data-tilt="5">
+                    <span>12</span>
+                    <small>Features clínicas</small>
+                </div>
+                <div class="stat" data-stagger data-tilt="5">
+                    <span>AES-128</span>
+                    <small>Criptografia</small>
+                </div>
+            </div>
+
+            <div class="about__team">
+                <h4>👥 Equipe</h4>
+                <div class="team-grid" data-stagger-group>
+                    <div class="team-card" data-stagger>Marcelo de Oliveira</div>
+                    <div class="team-card" data-stagger>Marcos Pires</div>
+                    <div class="team-card" data-stagger>Thiago Nascimento</div>
+                    <div class="team-card" data-stagger>Daniel Oliveira</div>
+                </div>
+            </div>
+
+            <div class="about__meta">
+                <p>👨‍🏫 <strong>Professor:</strong> Anderson Borges</p>
+                <p>🏫 <strong>Instituição:</strong> Colégio Visconde de Porto Seguro</p>
+                <p>📅 <strong>Ano:</strong> 2025 — FeNaDANTE</p>
+                <p>📚 <strong>Curso:</strong> Robótica e IA — 2ª série EM</p>
+            </div>
+
+            <button class="btn btn-solid btn-lg" onclick="showScreen('welcome')" data-magnetic=".3">
+                ← Voltar ao início
+            </button>
+
+        </div>
+    </section>
+
+</main>
+
+
+<!-- Toast -->
+<div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+<!-- Texto para leitor de tela -->
+<style>.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}</style>
+
+<!-- Scripts em ordem: animations → voice → script -->
+<script src="animations.js"></script>
+<script src="voice.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
