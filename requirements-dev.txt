@@ -1,0 +1,7 @@
+-r requirements.txt
+pandas
+python-dotenv
+torch
+transformers
+accelerate
+tqdm

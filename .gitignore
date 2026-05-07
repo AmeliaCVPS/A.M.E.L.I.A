@@ -1,0 +1,7 @@
+secret.key
+amelia_local.db
+*.log
+__pycache__/
+.venv/
+venv/
+.env
