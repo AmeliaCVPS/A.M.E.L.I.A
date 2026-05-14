@@ -1,8 +1,0 @@
-fastapi
-pydantic
-cryptography
-scikit-learn
-numpy
-joblib
-psycopg2-binary
-uvicorn[standard]
